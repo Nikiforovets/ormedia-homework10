@@ -11,19 +11,35 @@ export function searchTrack(){
     getTrackRequest(url);
 }
 
-function getTrackRequest(url){
-    fetch(url, {method: "GET"})
-    .then((response)=>{
-        response.json().then((musicData)=> {
-            if(typeof musicData.data[0] != "undefined"){
-                DZ.player.playTracks([musicData.data[0].id]);
-            }
-            else{
-                alert("По вашему запросу ничего не найдено");
-            }
+async function getTrackRequest(url){
+    try{
+        let response = await fetch(url, {method: "GET"});
+        let musicData = await response.json()
+        console.log(musicData);
+        if(typeof musicData.data[0] != "undefined"){
+            setMusicToPlaylist(musicData);
+            setArtistImage(musicData);
+        }
+        else{
+            alert("По вашему запросу ничего не найдено");
+        }
+    }
+    catch(e){
+        console.error(e);
+    }
+}
+
+function setMusicToPlaylist(musicData){
+    for(let i=0; i < 10; i++){
+        let track = document.getElementById("track" + i);
+        track.innerHTML = "<img src='" + musicData.data[i].album.cover_small +"'></img>";
+        track.innerHTML += "<span>" + musicData.data[i].title + " - " +  musicData.data[i].artist.name + "</span>";
+        track.addEventListener("click", ()=>{
+            DZ.player.playTracks([musicData.data[i].id]);
         })
-    })
-    .catch((error)=>{
-        console.error(error);
-    })
+    }
+}
+
+function setArtistImage(musicData){
+    document.getElementById("artist").src = musicData.data[0].artist.picture;
 }
